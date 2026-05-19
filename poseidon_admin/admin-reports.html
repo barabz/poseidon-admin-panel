@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSEIDON Admin - Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --muted: #f0fdf4;
+            --muted-foreground: #6b7280;
+            --destructive: #dc2626;
+            --border: #e5e7eb;
+            --chart-1: #4ade80;
+            --chart-2: #60a5fa;
+            --chart-3: #fbbf24;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--primary-foreground);
+        }
+
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .border-color {
+            border-color: var(--border);
+        }
+
+        .tab-active {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .tab-inactive {
+            background-color: transparent;
+            color: var(--muted-foreground);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Side Navigation -->
+    <div id="sideNav" class="fixed left-0 top-0 h-full w-64 z-50" style="background-color: #f0fdf4; color: #374151; border-right: 1px solid #e5e7eb;">
+        <h2 class="text-xl mb-4 p-4">POSEIDON Admin</h2>
+        <ul class="space-y-2 px-4">
+            <li id="nav-dashboard"><a href="admin-dashboard.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="home" class="w-4 h-4 mr-2"></i> Dashboard</a></li>
+            <li id="nav-monitoring"><a href="admin-monitoring.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="activity" class="w-4 h-4 mr-2"></i> Monitoring</a></li>
+            <li id="nav-accounts"><a href="admin-accounts.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="users" class="w-4 h-4 mr-2"></i> Accounts</a></li>
+            <li id="nav-reports"><a href="admin-reports.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Reports</a></li>
+            <li id="nav-assignments"><a href="admin-assignments.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Assignments</a></li>
+            <li id="nav-iot-control"><a href="admin-iot-control.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="settings" class="w-4 h-4 mr-2"></i> IoT Control</a></li>
+        </ul>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 card border-b border-color px-4 py-3">
+        <div id="headerContainer" class="ml-64 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <h1 class="text-xl font-semibold">Reports</h1>
+            </div>
+            <button class="btn-primary px-3 py-2 rounded text-sm">
+                <i data-lucide="download" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="sticky top-16 z-30 card border-b border-color px-4 py-2">
+        <div id="tabContainer" class="ml-64 flex gap-1">
+            <button id="overviewTab" class="tab-active px-3 py-2 rounded text-sm">Overview</button>
+            <button id="auditTab" class="tab-inactive px-3 py-2 rounded text-sm">Audit Logs</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="mainContainer" class="ml-64 px-4 py-6 space-y-6">
+        <!-- Overview Tab Content -->
+        <div id="overviewContent" class="space-y-6">
+            <!-- Summary Stats -->
+            <div class="card rounded-lg p-4">
+                <h2 class="text-lg font-semibold mb-3">System Summary</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">98.5%</div>
+                        <div class="text-xs text-muted">System Uptime</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">24</div>
+                        <div class="text-xs text-muted">Alerts Today</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Water Quality Chart -->
+            <div class="card rounded-lg p-4">
+                <h3 class="text-sm font-medium mb-3">Water Quality Trends (24h)</h3>
+                <div class="h-48">
+                    <canvas id="qualityChart" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="card rounded-lg p-4">
+                <h3 class="text-sm font-medium mb-3">Recent Alerts</h3>
+                <div class="space-y-3">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium">pH threshold exceeded</p>
+                            <p class="text-xs text-muted">Pond #3 • pH: 8.2</p>
+                        </div>
+                        <span class="text-xs text-muted">15m ago</span>
+                    </div>
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium">Temperature warning</p>
+                            <p class="text-xs text-muted">Pond #7 • Temp: 32°C</p>
+                        </div>
+                        <span class="text-xs text-muted">1h ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Logs Tab Content -->
+        <div id="auditContent" class="space-y-6 hidden">
+            <div class="card rounded-lg p-4">
+                <h2 class="text-lg font-semibold mb-3">Worker Activity Logs</h2>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-blue-400 pl-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Threshold Modified</p>
+                                <p class="text-xs text-muted">John Doe changed pH threshold from 6.5-7.5 to 6.0-8.0</p>
+                                <p class="text-xs text-muted">Pond #2</p>
+                            </div>
+                            <span class="text-xs text-muted">2h ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-l-4 border-green-400 pl-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm font-medium">System Access</p>
+                                <p class="text-xs text-muted">Jane Smith logged into worker dashboard</p>
+                                <p class="text-xs text-muted">IP: 192.168.1.45</p>
+                            </div>
+                            <span class="text-xs text-muted">3h ago</span>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-yellow-400 pl-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Alert Acknowledged</p>
+                                <p class="text-xs text-muted">Mike Johnson acknowledged DO warning alert</p>
+                                <p class="text-xs text-muted">Pond #5</p>
+                            </div>
+                            <span class="text-xs text-muted">4h ago</span>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-blue-400 pl-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Threshold Modified</p>
+                                <p class="text-xs text-muted">Sarah Wilson updated temperature range to 25-31°C</p>
+                                <p class="text-xs text-muted">Pond #8</p>
+                            </div>
+                            <span class="text-xs text-muted">6h ago</span>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-red-400 pl-3">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm font-medium">Critical Alert</p>
+                                <p class="text-xs text-muted">System detected critical pH level in Pond #1</p>
+                                <p class="text-xs text-muted">Auto-correction activated</p>
+                            </div>
+                            <span class="text-xs text-muted">8h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Tab functionality
+        const overviewTab = document.getElementById('overviewTab');
+        const auditTab = document.getElementById('auditTab');
+        const overviewContent = document.getElementById('overviewContent');
+        const auditContent = document.getElementById('auditContent');
+
+        function showOverview() {
+            overviewTab.className = 'tab-active px-3 py-2 rounded text-sm';
+            auditTab.className = 'tab-inactive px-3 py-2 rounded text-sm';
+            overviewContent.classList.remove('hidden');
+            auditContent.classList.add('hidden');
+        }
+
+        function showAudit() {
+            auditTab.className = 'tab-active px-3 py-2 rounded text-sm';
+            overviewTab.className = 'tab-inactive px-3 py-2 rounded text-sm';
+            auditContent.classList.remove('hidden');
+            overviewContent.classList.add('hidden');
+        }
+
+        overviewTab.addEventListener('click', showOverview);
+        auditTab.addEventListener('click', showAudit);
+
+        // Set active sidebar
+        const currentPage = window.location.pathname.split('/').pop();
+        let activeId = '';
+        if (currentPage === 'admin-dashboard.html') activeId = 'nav-dashboard';
+        else if (currentPage === 'admin-monitoring.html') activeId = 'nav-monitoring';
+        else if (currentPage === 'admin-accounts.html') activeId = 'nav-accounts';
+        else if (currentPage === 'admin-reports.html') activeId = 'nav-reports';
+        else if (currentPage === 'admin-assignments.html') activeId = 'nav-assignments';
+        else if (currentPage === 'admin-iot-control.html') activeId = 'nav-iot-control';
+        if (activeId) {
+            const li = document.getElementById(activeId);
+            li.querySelector('a').classList.add('bg-gray-200');
+        }
+
+        // Initialize chart
+        const ctx = document.getElementById('qualityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'pH',
+                    data: [6.8, 6.9, 7.1, 7.0, 6.8, 6.9, 7.0],
+                    borderColor: '#4ade80',
+                    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'DO (mg/L)',
+                    data: [7.2, 7.0, 6.8, 7.1, 7.3, 7.2, 7.1],
+                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Temp (°C)',
+                    data: [28.5, 27.8, 29.2, 30.1, 29.5, 28.8, 28.2],
+                    borderColor: '#fbbf24',
+                    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

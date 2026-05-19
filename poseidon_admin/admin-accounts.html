@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSEIDON Admin - Account Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --muted: #f0fdf4;
+            --muted-foreground: #6b7280;
+            --destructive: #dc2626;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--primary-foreground);
+        }
+
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .border-color {
+            border-color: var(--border);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-active { 
+            background-color: rgba(21, 128, 61, 0.1); 
+            color: var(--primary); 
+            border: 1px solid rgba(21, 128, 61, 0.2); 
+        }
+        
+        .status-inactive { 
+            background-color: rgba(220, 38, 38, 0.1); 
+            color: var(--destructive); 
+            border: 1px solid rgba(220, 38, 38, 0.2); 
+        }
+
+        /* profile card and avatar styles */
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .status-badge.online {
+            background-color: #22c55e;
+        }
+
+        .status-badge.offline {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Side Navigation -->
+    <div id="sideNav" class="fixed left-0 top-0 h-full w-64 z-50" style="background-color: #f0fdf4; color: #374151; border-right: 1px solid #e5e7eb;">
+        <h2 class="text-xl mb-4 p-4">POSEIDON Admin</h2>
+        <ul class="space-y-2 px-4">
+            <li id="nav-dashboard"><a href="admin-dashboard.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="home" class="w-4 h-4 mr-2"></i> Dashboard</a></li>
+            <li id="nav-monitoring"><a href="admin-monitoring.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="activity" class="w-4 h-4 mr-2"></i> Monitoring</a></li>
+            <li id="nav-accounts"><a href="admin-accounts.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="users" class="w-4 h-4 mr-2"></i> Accounts</a></li>
+            <li id="nav-reports"><a href="admin-reports.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Reports</a></li>
+            <li id="nav-assignments"><a href="admin-assignments.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Assignments</a></li>
+            <li id="nav-iot-control"><a href="admin-iot-control.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="settings" class="w-4 h-4 mr-2"></i> IoT Control</a></li>
+        </ul>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 card border-b border-color px-4 py-3">
+        <div id="headerContainer" class="ml-64 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <h1 class="text-xl font-semibold">Account Management</h1>
+            </div>
+            <button id="addAccountBtn" class="btn-primary px-4 py-2 rounded text-sm flex items-center gap-2 hover:opacity-90">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Worker
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContainer" class="ml-64 px-4 py-6">
+        <!-- convert to grid layout for profile cards -->
+        <div id="accountsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Worker Card 1 -->
+            <div class="card rounded-lg p-6 profile-card">
+                <div style="position: relative; display: inline-block; margin-bottom: 1rem;">
+                    <img src="/placeholder.svg?height=100&width=100" alt="John Doe" class="profile-avatar">
+                    <div class="status-badge online"></div>
+                </div>
+                <h3 class="font-semibold text-lg mb-1">John Doe</h3>
+                <p class="text-sm text-muted mb-3">john.doe@poseidon.com</p>
+                <span class="status-active px-3 py-1 text-xs rounded inline-block mb-3">Active</span>
+                <p class="text-xs text-muted mb-4">Worker • Pond #1, #2</p>
+                <div class="w-full flex gap-2">
+                    <button class="flex-1 text-blue-600 hover:bg-blue-50 rounded p-2 text-sm font-medium">Edit</button>
+                    <button class="flex-1 text-red-600 hover:bg-red-50 rounded p-2 text-sm font-medium">Deactivate</button>
+                </div>
+            </div>
+
+            <!-- Worker Card 2 -->
+            <div class="card rounded-lg p-6 profile-card">
+                <div style="position: relative; display: inline-block; margin-bottom: 1rem;">
+                    <img src="/placeholder.svg?height=100&width=100" alt="Jane Smith" class="profile-avatar">
+                    <div class="status-badge online"></div>
+                </div>
+                <h3 class="font-semibold text-lg mb-1">Jane Smith</h3>
+                <p class="text-sm text-muted mb-3">jane.smith@poseidon.com</p>
+                <span class="status-active px-3 py-1 text-xs rounded inline-block mb-3">Active</span>
+                <p class="text-xs text-muted mb-4">Worker • Pond #3, #4, #5</p>
+                <div class="w-full flex gap-2">
+                    <button class="flex-1 text-blue-600 hover:bg-blue-50 rounded p-2 text-sm font-medium">Edit</button>
+                    <button class="flex-1 text-red-600 hover:bg-red-50 rounded p-2 text-sm font-medium">Deactivate</button>
+                </div>
+            </div>
+
+            <!-- Worker Card 3 -->
+            <div class="card rounded-lg p-6 profile-card">
+                <div style="position: relative; display: inline-block; margin-bottom: 1rem;">
+                    <img src="/placeholder.svg?height=100&width=100" alt="Mike Johnson" class="profile-avatar">
+                    <div class="status-badge offline"></div>
+                </div>
+                <h3 class="font-semibold text-lg mb-1">Mike Johnson</h3>
+                <p class="text-sm text-muted mb-3">mike.johnson@poseidon.com</p>
+                <span class="status-inactive px-3 py-1 text-xs rounded inline-block mb-3">Inactive</span>
+                <p class="text-xs text-muted mb-4">Worker • No ponds assigned</p>
+                <div class="w-full flex gap-2">
+                    <button class="flex-1 text-blue-600 hover:bg-blue-50 rounded p-2 text-sm font-medium">Edit</button>
+                    <button class="flex-1 text-green-600 hover:bg-green-50 rounded p-2 text-sm font-medium">Activate</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Account Modal -->
+    <div id="addAccountModal" class="modal">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">Add New Worker</h2>
+                <button id="closeAddAccount" class="bg-transparent hover:bg-gray-100 p-1 rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Full Name</label>
+                    <input type="text" class="w-full p-2 border border-color rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" class="w-full p-2 border border-color rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Role</label>
+                    <select class="w-full p-2 border border-color rounded">
+                        <option>Worker</option>
+                        <option>Supervisor</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Assigned Ponds</label>
+                    <input type="text" placeholder="e.g., 1, 2, 3" class="w-full p-2 border border-color rounded">
+                </div>
+                <button class="w-full btn-primary p-3 rounded font-medium hover:opacity-90">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Account Modal -->
+    <div id="editAccountModal" class="modal">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">Edit Account</h2>
+                <button id="closeEditAccount" class="bg-transparent hover:bg-gray-100 p-1 rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Full Name</label>
+                    <input type="text" id="editName" class="w-full p-2 border border-color rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="editEmail" class="w-full p-2 border border-color rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Role</label>
+                    <select id="editRole" class="w-full p-2 border border-color rounded">
+                        <option>Worker</option>
+                        <option>Supervisor</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Assigned Ponds</label>
+                    <input type="text" id="editPonds" placeholder="e.g., 1, 2, 3" class="w-full p-2 border border-color rounded">
+                </div>
+                <button id="saveEditAccount" class="w-full btn-primary p-3 rounded font-medium hover:opacity-90">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        const currentPage = window.location.pathname.split('/').pop();
+        let activeId = '';
+        if (currentPage === 'admin-dashboard.html') activeId = 'nav-dashboard';
+        else if (currentPage === 'admin-monitoring.html') activeId = 'nav-monitoring';
+        else if (currentPage === 'admin-accounts.html') activeId = 'nav-accounts';
+        else if (currentPage === 'admin-reports.html') activeId = 'nav-reports';
+        else if (currentPage === 'admin-assignments.html') activeId = 'nav-assignments';
+        else if (currentPage === 'admin-iot-control.html') activeId = 'nav-iot-control';
+        if (activeId) {
+            const li = document.getElementById(activeId);
+            li.querySelector('a').classList.add('bg-gray-200');
+        }
+
+        const addAccountBtn = document.getElementById('addAccountBtn');
+        const addAccountModal = document.getElementById('addAccountModal');
+        const closeAddAccount = document.getElementById('closeAddAccount');
+        
+        const editAccountModal = document.getElementById('editAccountModal');
+        const closeEditAccount = document.getElementById('closeEditAccount');
+        const saveEditAccount = document.getElementById('saveEditAccount');
+        
+        let currentEditingCard = null;
+
+        function openModal(modal) {
+            modal.classList.add('show');
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('show');
+        }
+
+        addAccountBtn.addEventListener('click', () => openModal(addAccountModal));
+        closeAddAccount.addEventListener('click', () => closeModal(addAccountModal));
+        
+        closeEditAccount.addEventListener('click', () => closeModal(editAccountModal));
+
+        addAccountModal.addEventListener('click', (e) => {
+            if (e.target === addAccountModal) closeModal(addAccountModal);
+        });
+        
+        editAccountModal.addEventListener('click', (e) => {
+            if (e.target === editAccountModal) closeModal(editAccountModal);
+        });
+
+        function handleEditClick(card) {
+            const nameElement = card.querySelector('h3');
+            const emailElement = card.querySelector('p');
+            const roleAndPonds = card.querySelector('.text-xs.text-muted');
+            
+            const rolePart = roleAndPonds.textContent.split(' • ')[0];
+            const pondsPart = roleAndPonds.textContent.split(' • ')[1] || '';
+            
+            document.getElementById('editName').value = nameElement.textContent;
+            document.getElementById('editEmail').value = emailElement.textContent;
+            document.getElementById('editRole').value = rolePart;
+            document.getElementById('editPonds').value = pondsPart.replace('Pond #', '').replace('No ponds assigned', '');
+            
+            currentEditingCard = card;
+            openModal(editAccountModal);
+        }
+
+        function handleStatusToggle(card) {
+            const statusElement = card.querySelector('.status-active, .status-inactive');
+            const actionButtons = card.querySelectorAll('button');
+            const statusButton = actionButtons[1];
+            
+            if (statusElement.classList.contains('status-active')) {
+                statusElement.classList.remove('status-active');
+                statusElement.classList.add('status-inactive');
+                statusElement.textContent = 'Inactive';
+                statusButton.textContent = 'Activate';
+                statusButton.className = 'flex-1 text-green-600 hover:bg-green-50 rounded p-2 text-sm font-medium';
+                
+                const roleAndPonds = card.querySelector('.text-xs.text-muted');
+                const rolePart = roleAndPonds.textContent.split(' • ')[0];
+                roleAndPonds.textContent = rolePart + ' • No ponds assigned';
+            } else {
+                statusElement.classList.remove('status-inactive');
+                statusElement.classList.add('status-active');
+                statusElement.textContent = 'Active';
+                statusButton.textContent = 'Deactivate';
+                statusButton.className = 'flex-1 text-red-600 hover:bg-red-50 rounded p-2 text-sm font-medium';
+            }
+        }
+
+        saveEditAccount.addEventListener('click', () => {
+            if (currentEditingCard) {
+                const nameElement = currentEditingCard.querySelector('h3');
+                const emailElement = currentEditingCard.querySelectorAll('p')[0];
+                const roleAndPonds = currentEditingCard.querySelector('.text-xs.text-muted');
+                
+                nameElement.textContent = document.getElementById('editName').value;
+                emailElement.textContent = document.getElementById('editEmail').value;
+                
+                const role = document.getElementById('editRole').value;
+                const ponds = document.getElementById('editPonds').value;
+                const pondsText = ponds ? `Pond #${ponds.split(',').map(p => p.trim()).join(', #')}` : 'No ponds assigned';
+                
+                roleAndPonds.textContent = `${role} • ${pondsText}`;
+                
+                closeModal(editAccountModal);
+                currentEditingCard = null;
+            }
+        });
+
+        document.getElementById('accountsList').addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            
+            const card = button.closest('.profile-card');
+            const buttonText = button.textContent;
+            
+            if (buttonText === 'Edit') {
+                e.preventDefault();
+                handleEditClick(card);
+            } else if (buttonText === 'Deactivate' || buttonText === 'Activate') {
+                e.preventDefault();
+                handleStatusToggle(card);
+            }
+        });
+    </script>
+</body>
+</html>

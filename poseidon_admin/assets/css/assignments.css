@@ -1,0 +1,144 @@
+:root {
+  --background: #ffffff;
+  --foreground: #374151;
+  --card: #f0fdf4;
+  --card-foreground: #374151;
+  --primary: #15803d;
+  --primary-foreground: #ffffff;
+  --secondary: #84cc16;
+  --muted: #f0fdf4;
+  --muted-foreground: #6b7280;
+  --destructive: #dc2626;
+  --border: #e5e7eb;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.border-color {
+  border-color: var(--border);
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status badges */
+.status-assigned {
+  background-color: rgba(21, 128, 61, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(21, 128, 61, 0.2);
+}
+
+.status-unassigned {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--destructive);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.status-partial {
+  background-color: rgba(251, 191, 36, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+/* Avatar */
+.avatar-placeholder {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* Worker badge */
+.worker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: rgba(21, 128, 61, 0.1);
+  border: 1px solid rgba(21, 128, 61, 0.2);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+/* Checkbox custom */
+.worker-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.worker-checkbox:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.worker-checkbox:hover {
+  border-color: var(--primary);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1100;
+  max-width: 420px;
+  width: calc(100% - 32px);
+  display: none;
+}
+
+.toast.show {
+  display: block;
+}
+
+/* Pond card hover effect */
+.pond-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pond-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}

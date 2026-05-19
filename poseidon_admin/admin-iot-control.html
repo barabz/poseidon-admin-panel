@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSEIDON Admin - IoT Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --muted: #f0fdf4;
+            --muted-foreground: #6b7280;
+            --destructive: #dc2626;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .border-color {
+            border-color: var(--border);
+        }
+
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Side Navigation -->
+    <div id="sideNav" class="fixed left-0 top-0 h-full w-64 z-50" style="background-color: #f0fdf4; color: #374151; border-right: 1px solid #e5e7eb;">
+        <h2 class="text-xl mb-4 p-4">POSEIDON Admin</h2>
+        <ul class="space-y-2 px-4">
+            <li id="nav-dashboard"><a href="admin-dashboard.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="home" class="w-4 h-4 mr-2"></i> Dashboard</a></li>
+            <li id="nav-monitoring"><a href="admin-monitoring.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="activity" class="w-4 h-4 mr-2"></i> Monitoring</a></li>
+            <li id="nav-accounts"><a href="admin-accounts.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="users" class="w-4 h-4 mr-2"></i> Accounts</a></li>
+            <li id="nav-reports"><a href="admin-reports.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Reports</a></li>
+            <li id="nav-assignments"><a href="admin-assignments.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Assignments</a></li>
+            <li id="nav-iot-control"><a href="admin-iot-control.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="settings" class="w-4 h-4 mr-2"></i> IoT Control</a></li>
+        </ul>
+    </div>
+
+    <header class="sticky top-0 z-40 card border-b border-color px-4 py-3">
+        <div id="headerContainer" class="ml-64 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <h1 class="text-xl font-semibold">IoT Device Monitoring</h1>
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContainer" class="ml-64 px-4 py-6 space-y-6">
+        
+        <h2 class="text-lg font-semibold border-b border-color pb-2">Aeration Systems</h2>
+        <div id="aeratorList" class="space-y-4">
+
+            <div class="card rounded-lg p-4 flex items-center justify-between shadow-sm" data-device-status="on">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-green-100 text-green-700 rounded-lg flex items-center justify-center">
+                        <i data-lucide="wind" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg">Aerator 1</h3>
+                        <p class="text-xs text-muted flex items-center gap-1">
+                            <i data-lucide="waves" class="w-3 h-3"></i> Pond #1 (Tilapia)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-green-600 status-label">Running</span>
+                    <div class="toggle-switch on" onclick="toggleDevice(this)">
+                        <div class="indicator"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card rounded-lg p-4 flex items-center justify-between shadow-sm" data-device-status="off">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center">
+                        <i data-lucide="wind" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg">Aerator 2</h3>
+                        <p class="text-xs text-muted flex items-center gap-1">
+                            <i data-lucide="waves" class="w-3 h-3"></i> Pond #2 (Catfish)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-gray-500 status-label">Off</span>
+                    <div class="toggle-switch" onclick="toggleDevice(this)">
+                        <div class="indicator"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="h-4"></div>
+
+        <h2 class="text-lg font-semibold border-b border-color pb-2">Water Exchange Systems (PWE)</h2>
+        <div id="pweList" class="space-y-4">
+
+            <div class="card rounded-lg p-4 flex items-center justify-between shadow-sm" data-device-status="off">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center">
+                        <i data-lucide="gauge" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg">PWE Pump A</h3>
+                        <p class="text-xs text-muted flex items-center gap-1">
+                            <i data-lucide="waves" class="w-3 h-3"></i> Pond #1 (Tilapia)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-gray-500 status-label">Idle</span>
+                    <div class="toggle-switch" onclick="toggleDevice(this)">
+                        <div class="indicator"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card rounded-lg p-4 flex items-center justify-between shadow-sm" data-device-status="on">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-green-100 text-green-700 rounded-lg flex items-center justify-center">
+                        <i data-lucide="gauge" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg">PWE Pump B</h3>
+                        <p class="text-xs text-muted flex items-center gap-1">
+                            <i data-lucide="waves" class="w-3 h-3"></i> Pond #3 (Milkfish)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-green-600 status-label">Running</span>
+                    <div class="toggle-switch on" onclick="toggleDevice(this)">
+                        <div class="indicator"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // ---------------------------------------------------------
+        // View Mode Toggle (Consistent Logic)
+        // ---------------------------------------------------------
+        let currentView = 'mobile';
+        const mobileViewBtn = document.getElementById('mobileView');
+        const desktopViewBtn = document.getElementById('desktopView');
+        const headerContainer = document.getElementById('headerContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        const aeratorList = document.getElementById('aeratorList');
+        const pweList = document.getElementById('pweList');
+
+        function switchToMobile() {
+            currentView = 'mobile';
+            mobileViewBtn.className = 'btn-primary h-8 px-3 rounded text-sm flex items-center gap-1';
+            desktopViewBtn.className = 'bg-transparent hover:bg-gray-100 h-8 px-3 rounded text-sm flex items-center gap-1';
+            
+            headerContainer.className = 'max-w-md mx-auto flex items-center justify-between';
+            mainContainer.className = 'max-w-md mx-auto px-4 py-6 space-y-6';
+            // Mobile view is always stacked (space-y-4 is sufficient for lists)
+        }
+
+        function switchToDesktop() {
+            currentView = 'desktop';
+            desktopViewBtn.className = 'btn-primary h-8 px-3 rounded text-sm flex items-center gap-1';
+            mobileViewBtn.className = 'bg-transparent hover:bg-gray-100 h-8 px-3 rounded text-sm flex items-center gap-1';
+            
+            headerContainer.className = 'max-w-6xl mx-auto flex items-center justify-between';
+            mainContainer.className = 'max-w-6xl mx-auto px-4 py-6 space-y-6';
+            
+            // In desktop, put the device lists into a grid
+            aeratorList.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+            pweList.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+        }
+
+        mobileViewBtn.addEventListener('click', switchToMobile);
+        desktopViewBtn.addEventListener('click', switchToDesktop);
+
+        // ---------------------------------------------------------
+        // IoT Device Control Logic
+        // ---------------------------------------------------------
+
+        function toggleDevice(toggleElement) {
+            const card = toggleElement.closest('.card');
+            const statusLabel = card.querySelector('.status-label');
+            const deviceName = card.querySelector('h3').textContent;
+
+            // Check current status
+            const isCurrentlyOn = toggleElement.classList.contains('on');
+            
+            if (isCurrentlyOn) {
+                // Turn OFF
+                toggleElement.classList.remove('on');
+                card.dataset.deviceStatus = 'off';
+                
+                statusLabel.textContent = (deviceName.includes('Aerator')) ? 'Off' : 'Idle';
+                statusLabel.classList.remove('text-green-600');
+                statusLabel.classList.add('text-gray-500');
+
+                console.log(`${deviceName} is OFF.`);
+                alert(`${deviceName} switched OFF.`);
+            } else {
+                // Turn ON
+                toggleElement.classList.add('on');
+                card.dataset.deviceStatus = 'on';
+
+                statusLabel.textContent = 'Running';
+                statusLabel.classList.remove('text-gray-500');
+                statusLabel.classList.add('text-green-600');
+                
+                console.log(`${deviceName} is ON.`);
+                alert(`${deviceName} switched ON.`);
+            }
+
+            // In a real application, an AJAX call would be made here to send the command to the IoT device server.
+        }
+    </script>
+    <script>
+        // Set active navigation item
+        document.getElementById('nav-iot-control').classList.add('bg-green-100');
+    </script>
+</body>
+</html>

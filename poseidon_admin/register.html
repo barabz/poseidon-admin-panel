@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSEIDON Admin - Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --muted: #f0fdf4;
+            --muted-foreground: #6b7280;
+            --destructive: #dc2626;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            color: var(--foreground);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            background-color: #127a2d;
+        }
+
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .border-color {
+            border-color: var(--border);
+        }
+
+        .input-field {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Registration Container -->
+    <div class="w-full max-w-md">
+        <div class="card rounded-lg p-8">
+            <!-- Logo and Title -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 btn-primary rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="shield-check" class="w-8 h-8"></i>
+                </div>
+                <h1 class="text-2xl font-bold">Create Account</h1>
+                <p class="text-sm text-muted mt-2">Join POSEIDON Admin</p>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name" class="w-full input-field" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Username</label>
+                    <input type="text" id="username" placeholder="Choose a username" class="w-full input-field" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" class="w-full input-field" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="password" placeholder="Create a password" class="w-full input-field" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password" class="w-full input-field" required>
+                </div>
+
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" class="w-4 h-4 border-color rounded" required>
+                    <span class="text-muted">I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a></span>
+                </label>
+
+                <button type="submit" class="w-full btn-primary p-3 rounded font-medium mt-6">Create Account</button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center mt-6 pt-6 border-t border-color">
+                <p class="text-sm text-muted">
+                    Already have an account?
+                    <a href="login.html" class="text-blue-600 hover:underline font-medium">Login here</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-xs text-muted">
+            <p>&copy; 2026 POSEIDON Admin. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Handle registration form submission
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            window.location.href = 'admin-dashboard.html';
+        });
+    </script>
+</body>
+</html>

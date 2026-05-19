@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TilapiaSafe Admin - Pond Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --background: #ffffff;
+            --foreground: #374151;
+            --card: #f0fdf4;
+            --card-foreground: #374151;
+            --primary: #15803d;
+            --primary-foreground: #ffffff;
+            --secondary: #84cc16;
+            --muted: #f0fdf4;
+            --muted-foreground: #6b7280;
+            --destructive: #dc2626;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            scroll-behavior: smooth; /* Smooth scrolling for the anchor link */
+        }
+
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .border-color {
+            border-color: var(--border);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Status colors */
+        .status-assigned { 
+            background-color: rgba(21, 128, 61, 0.1); 
+            color: var(--primary); 
+            border: 1px solid rgba(21, 128, 61, 0.2); 
+        }
+        
+        .status-unassigned { 
+            background-color: rgba(220, 38, 38, 0.1); 
+            color: var(--destructive); 
+            border: 1px solid rgba(220, 38, 38, 0.2); 
+        }
+
+        .avatar-placeholder {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Side Navigation -->
+    <div id="sideNav" class="fixed left-0 top-0 h-full w-64 z-50" style="background-color: #f0fdf4; color: #374151; border-right: 1px solid #e5e7eb;">
+        <h2 class="text-xl mb-4 p-4">TilapiaSafe Admin</h2>
+        <ul class="space-y-2 px-4">
+            <li id="nav-dashboard"><a href="admin-dashboard.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="home" class="w-4 h-4 mr-2"></i> Dashboard</a></li>
+            <li id="nav-monitoring"><a href="admin-monitoring.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="activity" class="w-4 h-4 mr-2"></i> Monitoring</a></li>
+            <li id="nav-accounts"><a href="admin-accounts.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="users" class="w-4 h-4 mr-2"></i> Accounts</a></li>
+            <li id="nav-reports"><a href="admin-reports.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Reports</a></li>
+            <li id="nav-assignments"><a href="admin-assignments.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Assignments</a></li>
+            <li id="nav-iot-control"><a href="admin-iot-control.html" class="flex items-center p-2 hover:bg-gray-100 rounded" style="color: #374151;"><i data-lucide="settings" class="w-4 h-4 mr-2"></i> IoT Control</a></li>
+        </ul>
+    </div>
+
+    <div id="viewToggle" class="hidden md:block fixed top-4 right-4 z-50">
+        <div class="flex items-center gap-1 card rounded-lg p-1">
+            <button id="mobileView" class="btn-primary h-8 px-3 rounded text-sm flex items-center gap-1">
+                <i data-lucide="smartphone" class="w-4 h-4"></i>
+                Mobile
+            </button>
+            <button id="desktopView" class="bg-transparent hover:bg-gray-100 h-8 px-3 rounded text-sm flex items-center gap-1">
+                <i data-lucide="monitor" class="w-4 h-4"></i>
+                Desktop
+            </button>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 card border-b border-color px-4 py-3">
+        <div id="headerContainer" class="ml-64 max-w-md mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="window.location.href='admin-dashboard.html'" class="w-8 h-8 btn-primary rounded-lg flex items-center justify-center">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </button>
+                <h1 class="text-xl font-semibold">Pond Management</h1>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <a href="#assignmentsGrid" class="bg-white border border-primary text-primary hover:bg-green-50 px-3 py-2 rounded text-sm flex items-center gap-2 transition-colors">
+                    <i data-lucide="list-checks" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Worker Assignments</span>
+                </a>
+
+                <button id="registerPondBtn" class="bg-white border border-green-700 text-green-700 hover:bg-green-50 px-3 py-2 rounded text-sm flex items-center gap-2 transition-colors">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Register Pond</span>
+                </button>
+                
+                <button id="quickAssignBtn" class="btn-primary px-3 py-2 rounded text-sm flex items-center gap-2 hover:opacity-90">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Quick Assign</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContainer" class="max-w-md mx-auto px-4 py-6 space-y-6">
+        
+        <div class="flex gap-2">
+            <div class="relative flex-1">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-muted"></i>
+                <input type="text" placeholder="Search ponds..." class="w-full pl-9 p-2 card rounded text-sm focus:outline-none focus:ring-1 focus:ring-green-600">
+            </div>
+            <button class="card p-2 rounded hover:bg-gray-50">
+                <i data-lucide="filter" class="w-4 h-4 text-muted"></i>
+            </button>
+        </div>
+
+        <div id="assignmentsGrid" class="space-y-4">
+            
+            <div class="card rounded-lg p-4" id="card-pond-1">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center">
+                            <i data-lucide="waves" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg">Pond #1</h3>
+                            <p class="text-xs text-muted">Concrete • <span class="font-medium text-green-700">Tilapia</span></p>
+                        </div>
+                    </div>
+                    <span class="status-assigned px-2 py-1 text-xs rounded flex items-center gap-1">
+                        <i data-lucide="check-circle" class="w-3 h-3"></i> Assigned
+                    </span>
+                </div>
+                
+                <div class="border-t border-color pt-3 mb-3">
+                    <p class="text-xs text-muted mb-2 uppercase font-medium">Current Worker</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full avatar-placeholder flex items-center justify-center font-bold text-xs">JD</div>
+                            <div>
+                                <p class="text-sm font-medium worker-name">John Doe</p>
+                                <p class="text-xs text-muted">Active since: 8:00 AM</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-red-500" onclick="unassignWorker('card-pond-1')">
+                            <i data-lucide="user-x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="openAssignModal('Pond #1', 'John Doe')" class="w-full btn-outline py-2 rounded text-sm hover:bg-green-50 transition-colors">
+                    Change Assignment
+                </button>
+            </div>
+
+            <div class="card rounded-lg p-4" id="card-pond-2">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center">
+                            <i data-lucide="fish" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg">Pond #2</h3>
+                            <p class="text-xs text-muted">Mud Pond • <span class="font-medium text-amber-700">Catfish (Hito)</span></p>
+                        </div>
+                    </div>
+                    <span class="status-assigned px-2 py-1 text-xs rounded flex items-center gap-1">
+                        <i data-lucide="check-circle" class="w-3 h-3"></i> Assigned
+                    </span>
+                </div>
+                
+                <div class="border-t border-color pt-3 mb-3">
+                    <p class="text-xs text-muted mb-2 uppercase font-medium">Current Worker</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full avatar-placeholder flex items-center justify-center font-bold text-xs">JS</div>
+                            <div>
+                                <p class="text-sm font-medium worker-name">Jane Smith</p>
+                                <p class="text-xs text-muted">Active since: 9:30 AM</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-red-500" onclick="unassignWorker('card-pond-2')">
+                            <i data-lucide="user-x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="openAssignModal('Pond #2', 'Jane Smith')" class="w-full btn-outline py-2 rounded text-sm hover:bg-green-50 transition-colors">
+                    Change Assignment
+                </button>
+            </div>
+
+            <div class="card rounded-lg p-4" id="card-pond-3">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center">
+                            <i data-lucide="waves" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg">Pond #3</h3>
+                            <p class="text-xs text-muted">Cage • <span class="font-medium text-gray-700">Milkfish (Bangus)</span></p>
+                        </div>
+                    </div>
+                    <span class="status-unassigned px-2 py-1 text-xs rounded flex items-center gap-1">
+                        <i data-lucide="alert-circle" class="w-3 h-3"></i> Unassigned
+                    </span>
+                </div>
+                
+                <div class="border-t border-color pt-3 mb-3">
+                    <p class="text-xs text-muted mb-2 uppercase font-medium">Current Worker</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400 italic worker-name">No worker assigned</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="openAssignModal('Pond #3', '')" class="w-full btn-primary py-2 rounded text-sm hover:opacity-90 transition-opacity">
+                    Assign Worker Now
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="assignModal" class="modal">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">Manage Assignment</h2>
+                <button id="closeAssignModal" class="bg-transparent hover:bg-gray-100 p-1 rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Select Fishpond</label>
+                    <div class="relative">
+                        <i data-lucide="waves" class="w-4 h-4 absolute left-3 top-3 text-muted"></i>
+                        <select id="modalPondSelect" class="w-full pl-9 p-2 border border-color rounded appearance-none bg-white">
+                            <option>Pond #1</option>
+                            <option>Pond #2</option>
+                            <option>Pond #3</option>
+                            <option>Pond #4</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-3 text-muted pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-muted-foreground">Assign Worker</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="w-4 h-4 absolute left-3 top-3 text-muted"></i>
+                        <select id="modalWorkerSelect" class="w-full pl-9 p-2 border border-color rounded appearance-none bg-white">
+                            <option value="">Select a worker...</option>
+                            <option value="John Doe">John Doe</option>
+                            <option value="Jane Smith">Jane Smith</option>
+                            <option value="Mike Johnson">Mike Johnson</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-3 text-muted pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-100 rounded p-3 text-xs text-blue-800">
+                    <div class="flex gap-2">
+                        <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+                        <p>Changing assignment will notify the worker immediately via their mobile dashboard.</p>
+                    </div>
+                </div>
+
+                <button id="saveAssignmentBtn" class="w-full btn-primary p-3 rounded font-medium mt-2">
+                    Confirm Assignment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="registerModal" class="modal">
+        <div class="card rounded-lg p-6 max-w-md w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="bg-green-100 p-2 rounded-lg text-green-700">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold">Register New Pond</h2>
+                </div>
+                <button id="closeRegisterModal" class="bg-transparent hover:bg-gray-100 p-1 rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-4" onsubmit="event.preventDefault();">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700">Pond Name / ID</label>
+                    <input type="text" placeholder="e.g., Pond #5 - North Zone" class="w-full p-2 border border-color rounded focus:ring-1 focus:ring-green-600 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700">Fish Species</label>
+                    <div class="relative">
+                        <i data-lucide="fish" class="w-4 h-4 absolute left-3 top-3 text-muted"></i>
+                        <select class="w-full pl-9 p-2 border border-color rounded appearance-none bg-white focus:ring-1 focus:ring-green-600 focus:outline-none">
+                            <option value="" disabled selected>Select species to cultivate...</option>
+                            <optgroup label="Common">
+                                <option value="tilapia">Tilapia (Nile/Mozambique)</option>
+                                <option value="catfish">Catfish (Hito)</option>
+                                <option value="milkfish">Milkfish (Bangus)</option>
+                            </optgroup>
+                            <optgroup label="Other Freshwater">
+                                <option value="carp">Carp (Common/Bighead)</option>
+                                <option value="mudfish">Mudfish (Dalag)</option>
+                                <option value="snakehead">Snakehead</option>
+                                <option value="gourami">Gourami</option>
+                                <option value="pangasius">Pangasius</option>
+                            </optgroup>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-3 text-muted pointer-events-none"></i>
+                    </div>
+                    <p class="text-xs text-muted mt-1">Select the primary species. This adjusts sensor thresholds.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-700">Type</label>
+                        <select class="w-full p-2 border border-color rounded bg-white text-sm">
+                            <option>Earthen Pond</option>
+                            <option>Concrete Tank</option>
+                            <option>Cage</option>
+                            <option>Recirculating (RAS)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-700">Size (sqm)</label>
+                        <input type="number" placeholder="Area" class="w-full p-2 border border-color rounded text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700">Estimated Capacity</label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" placeholder="e.g., 5000" class="w-full p-2 border border-color rounded">
+                        <span class="text-sm text-muted">fingerlings</span>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button class="w-full btn-primary p-3 rounded font-medium flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        Register Pond
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // ---------------------------------------------------------
+        // View Mode Toggle
+        // ---------------------------------------------------------
+        let currentView = 'mobile';
+        const mobileViewBtn = document.getElementById('mobileView');
+        const desktopViewBtn = document.getElementById('desktopView');
+        const headerContainer = document.getElementById('headerContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        const assignmentsGrid = document.getElementById('assignmentsGrid');
+
+        function switchToMobile() {
+            currentView = 'mobile';
+            mobileViewBtn.className = 'btn-primary h-8 px-3 rounded text-sm flex items-center gap-1';
+            desktopViewBtn.className = 'bg-transparent hover:bg-gray-100 h-8 px-3 rounded text-sm flex items-center gap-1';
+            
+            headerContainer.className = 'max-w-md mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between';
+            mainContainer.className = 'max-w-md mx-auto px-4 py-6 space-y-6';
+            assignmentsGrid.className = 'space-y-4';
+        }
+
+        function switchToDesktop() {
+            currentView = 'desktop';
+            desktopViewBtn.className = 'btn-primary h-8 px-3 rounded text-sm flex items-center gap-1';
+            mobileViewBtn.className = 'bg-transparent hover:bg-gray-100 h-8 px-3 rounded text-sm flex items-center gap-1';
+            
+            headerContainer.className = 'max-w-6xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between';
+            mainContainer.className = 'max-w-6xl mx-auto px-4 py-6 space-y-6';
+            assignmentsGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 space-y-0';
+        }
+
+        mobileViewBtn.addEventListener('click', switchToMobile);
+        desktopViewBtn.addEventListener('click', switchToDesktop);
+
+        // ---------------------------------------------------------
+        // Modal Logic
+        // ---------------------------------------------------------
+        
+        // 1. Assignment Modal
+        const assignModal = document.getElementById('assignModal');
+        const quickAssignBtn = document.getElementById('quickAssignBtn');
+        const closeAssignModal = document.getElementById('closeAssignModal');
+        const saveAssignmentBtn = document.getElementById('saveAssignmentBtn');
+        const modalPondSelect = document.getElementById('modalPondSelect');
+        const modalWorkerSelect = document.getElementById('modalWorkerSelect');
+
+        // 2. Register Pond Modal (NEW)
+        const registerModal = document.getElementById('registerModal');
+        const registerPondBtn = document.getElementById('registerPondBtn');
+        const closeRegisterModal = document.getElementById('closeRegisterModal');
+
+        function toggleModal(modal, show) {
+            if(show) modal.classList.add('show');
+            else modal.classList.remove('show');
+        }
+
+        // --- Assignment Modal Events ---
+        quickAssignBtn.addEventListener('click', () => {
+            modalPondSelect.value = 'Pond #1'; 
+            modalWorkerSelect.value = '';
+            toggleModal(assignModal, true);
+        });
+
+        closeAssignModal.addEventListener('click', () => toggleModal(assignModal, false));
+        assignModal.addEventListener('click', (e) => {
+            if (e.target === assignModal) toggleModal(assignModal, false);
+        });
+
+        // --- Register Pond Modal Events ---
+        registerPondBtn.addEventListener('click', () => {
+            toggleModal(registerModal, true);
+        });
+
+        closeRegisterModal.addEventListener('click', () => toggleModal(registerModal, false));
+        registerModal.addEventListener('click', (e) => {
+            if (e.target === registerModal) toggleModal(registerModal, false);
+        });
+
+        // Helper to open specific assignment
+        function openAssignModal(pondName, currentWorker) {
+            modalPondSelect.value = pondName;
+            modalWorkerSelect.value = currentWorker;
+            toggleModal(assignModal, true);
+        }
+
+        // Mock Logic
+        function unassignWorker(cardId) {
+            if(confirm('Remove worker from this pond?')) {
+                const card = document.getElementById(cardId);
+                const statusBadge = card.querySelector('.status-assigned');
+                const nameDisplay = card.querySelector('.worker-name');
+                const avatar = card.querySelector('.rounded-full');
+                const btn = card.querySelector('button.w-full');
+
+                if(statusBadge) {
+                    statusBadge.className = 'status-unassigned px-2 py-1 text-xs rounded flex items-center gap-1';
+                    statusBadge.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3"></i> Unassigned';
+                }
+                if(nameDisplay) {
+                    nameDisplay.className = 'text-sm text-gray-400 italic worker-name';
+                    nameDisplay.textContent = 'No worker assigned';
+                }
+                if(avatar) {
+                    avatar.className = 'w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center';
+                    avatar.innerHTML = '<i data-lucide="user" class="w-4 h-4"></i>';
+                }
+                if(btn) {
+                    btn.className = 'w-full btn-primary py-2 rounded text-sm hover:opacity-90 transition-opacity';
+                    btn.textContent = 'Assign Worker Now';
+                }
+                lucide.createIcons();
+            }
+        }
+
+        saveAssignmentBtn.addEventListener('click', () => {
+            alert(`Assignment Updated:\n${modalPondSelect.value} assigned to ${modalWorkerSelect.value || 'Unassigned'}`);
+            toggleModal(assignModal, false);
+        });
+
+        // New Mock Register Function
+        const registerFormBtn = registerModal.querySelector('.btn-primary');
+        registerFormBtn.addEventListener('click', () => {
+            const species = registerModal.querySelector('select').value;
+            if(!species) {
+                alert('Please select a fish species.');
+                return;
+            }
+            alert(`New Pond Registered Successfully!\nSpecies: ${species}`);
+            toggleModal(registerModal, false);
+        });
+
+    </script>
+</body>
+</html>
